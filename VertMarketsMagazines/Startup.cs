@@ -19,7 +19,7 @@ namespace VertMarketsMagazines
             IConfiguration configuration = builder.Build();
 
             services.AddSingleton(configuration);
-            services.AddTransient<IMagazine, MagazineStore>();
+            services.AddTransient<IMagazineService, MagazineStore>();
 
             services.AddTransient<EntryPoint>();
 

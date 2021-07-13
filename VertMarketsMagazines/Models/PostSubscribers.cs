@@ -4,8 +4,8 @@ using System.Text;
 
 namespace VertMarketsMagazines.Models
 {
-    public class AppSettings
+    public class PostSubscribers
     {
-        public string ApiUrl { get; set; }
+        public IEnumerable<string> Subscribers { get; set; }
     }
 }

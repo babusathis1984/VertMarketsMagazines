@@ -4,7 +4,7 @@ using System.Text;
 
 namespace VertMarketsMagazines.Models
 {
-    public class PostSubscriberAnswers
+    public class SubmitAnswerResponse
     {
         public string TotalTime { get; set; }
         public bool AnswerCorrect { get; set; }

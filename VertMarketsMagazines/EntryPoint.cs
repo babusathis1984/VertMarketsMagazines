@@ -11,22 +11,22 @@ namespace VertMarketsMagazines
 {
     public class EntryPoint
     {
-        private readonly IMagazine _magazineService;
-        public EntryPoint(IConfiguration configuration, IMagazine magazineService)
+        private readonly IMagazineService _magazineService;
+        public EntryPoint(IMagazineService magazineService)
         {
             _magazineService = magazineService;
         }
-        public void Run(String[] args)
+        public void Run(string[] args)
         {
-            var result = GetProcessTimings();
-            Console.WriteLine($"Result: {JsonConvert.SerializeObject(result)}");
+            var result = GetResultOfSubmitAnswers();
+            Console.WriteLine($"Output: {JsonConvert.SerializeObject(result)}");
             Console.ReadLine();
         }
-        public PostSubscriberAnswers GetProcessTimings()
+        public PostAnswerResponse GetResultOfSubmitAnswers()
         {
             var categories = _magazineService.GetCategories().Result.Data;
             var subscribers = _magazineService.GetSubscribers().Result.Data;
-            PostSubscriberAnswers result = new PostSubscriberAnswers();
+            PostAnswerResponse result = new PostAnswerResponse();
             if (categories.Count > 0 && subscribers.Count > 0)
             {
                 List<Magazine> magazineList = new List<Magazine>();
@@ -39,15 +39,16 @@ namespace VertMarketsMagazines
                         magazineList.AddRange(magazine);
                     }
                 }
-
                 List<string> answerRequest = new List<string>();
 
                 foreach (var subscriber in subscribers)
                 {
-                    var categoryCount = magazineList.Where(r => subscriber.MagazineIds
-                    .Contains(Convert.ToInt32(r.Id))).ToList().Distinct().Count();
+                    var categoriesCount = subscriber.MagazineIds.Join(magazineList, s => s, m => m.Id, (s, m) => new
+                    {
+                        m.Category
+                    }).ToList().Distinct();
 
-                    if (categories.Count.Equals(categoryCount))
+                    if (categoriesCount.Count() == categories.Count())
                     {
                         answerRequest.Add(subscriber.Id);
                     }

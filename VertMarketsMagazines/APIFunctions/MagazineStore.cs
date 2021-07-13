@@ -11,11 +11,12 @@ using VertMarketsMagazines.Models;
 
 namespace VertMarketsMagazines.APIFunctions
 {
-    public class MagazineStore : IMagazine
+    public class MagazineStore : IMagazineService
     {
         private readonly IConfiguration _configuration;
         private readonly string baseURL;
         private readonly APIProcess apiProcess;
+        private string _token;
         public MagazineStore(IConfiguration configuration)
         {
             _configuration = configuration;
@@ -46,8 +47,8 @@ namespace VertMarketsMagazines.APIFunctions
             CategoriesResponse categories = new CategoriesResponse();
             try
             {
-                var token = GetToken().Result.Token;
-                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.CATEGORYAPI}/{token}");
+                _token??= GetToken().Result.Token;
+                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.CATEGORYAPI}/{_token}");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -67,8 +68,8 @@ namespace VertMarketsMagazines.APIFunctions
             SubscriberData subscribers = new SubscriberData();
             try
             {
-                var token = GetToken().Result.Token;
-                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.SUBSCRIBERAPI}/{token}");
+                _token ??= GetToken().Result.Token;
+                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.SUBSCRIBERAPI}/{_token}");
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     var readTask = responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
@@ -87,8 +88,8 @@ namespace VertMarketsMagazines.APIFunctions
             MagazineResponse magazines = new MagazineResponse();
             try
             {
-                var token = GetToken().Result.Token;
-                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.MAGAZINEAPI}/{token}/{category}");
+                _token ??= GetToken().Result.Token;
+                HttpResponseMessage responseMessage = await apiProcess.GetAPIResponse($"{EndPoints.MAGAZINEAPI}/{_token}/{category}");
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
@@ -103,21 +104,21 @@ namespace VertMarketsMagazines.APIFunctions
             }
             return magazines;
         }
-        public async Task<PostSubscriberAnswers> SubmitAnswer(IEnumerable<string> subscribers)
+        public async Task<PostAnswerResponse> SubmitAnswer(IEnumerable<string> subscribers)
         {
-            PostSubscriberAnswers answersResponse = new PostSubscriberAnswers();
+            PostAnswerResponse answersResponse = new PostAnswerResponse();
             string result = string.Empty;
             try
             {
-                string content = JsonConvert.SerializeObject(subscribers);
-                var token = GetToken().Result.Token;
-                HttpResponseMessage responseMessage = await apiProcess.PostAPIRequest($"{EndPoints.ANSWERAPI}/{token}", content);
+                string content = JsonConvert.SerializeObject(new PostSubscribers { Subscribers = subscribers });
+                _token ??= GetToken().Result.Token;
+                HttpResponseMessage responseMessage = await apiProcess.PostAPIRequest($"{EndPoints.ANSWERAPI}/{_token}", content);
 
                 if (responseMessage.IsSuccessStatusCode)
                 {
                     var readTask = responseMessage.Content.ReadAsStringAsync().ConfigureAwait(false);
                     result = readTask.GetAwaiter().GetResult();
-                    answersResponse = JsonConvert.DeserializeObject<PostSubscriberAnswers>(result);
+                    answersResponse = JsonConvert.DeserializeObject<PostAnswerResponse>(result);
                 }
             }
             catch (Exception ex)
